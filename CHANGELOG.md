@@ -1,3 +1,6 @@
+## [0.3.0] - 2026-10-09
+- Users can now click on rotary encoder CW/CCW bindings in the visualizer to assign/modify their keycodes via the QuickPick menu.
+
 # Changelog
 
 ## 0.1.2 - 2026-10-09
