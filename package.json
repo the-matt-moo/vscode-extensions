@@ -1,0 +1,58 @@
+{
+  "name": "qmk-keymap-lens",
+  "displayName": "QMK Keymap Lens",
+  "description": "Visual keymap editing for QMK keymap.c files",
+  "publisher": "the-matt-moo",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:qmkLens.doctor"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "qmkLens.doctor",
+        "title": "QMK Lens: Doctor"
+      }
+    ],
+    "configuration": {
+      "title": "QMK Keymap Lens",
+      "properties": {
+        "qmkLens.msysRoot": {
+          "type": "string",
+          "default": "C:/QMK_MSYS",
+          "description": "QMK MSYS install root."
+        },
+        "qmkLens.qmkHome": {
+          "type": "string",
+          "default": "",
+          "description": "qmk_firmware path. Empty = use `qmk config user.qmk_home`."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "tree-sitter-c": "0.24.1",
+    "web-tree-sitter": "0.25.10"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "@types/vscode": "~1.95.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
