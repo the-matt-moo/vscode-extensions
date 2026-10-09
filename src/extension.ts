@@ -47,8 +47,11 @@ async function doctor(out: vscode.OutputChannel): Promise<void> {
   }
 }
 
-async function openVisualEditor(): Promise<void> {
-  const uri = vscode.window.activeTextEditor?.document.uri;
+async function openVisualEditor(provider: KeymapEditorProvider): Promise<void> {
+  const active = vscode.window.activeTextEditor?.document;
+  const uri = active && parsePath(active.uri.fsPath)
+    ? active.uri
+    : provider.getLastActiveDocument()?.uri;
   if (!uri || !parsePath(uri.fsPath)) {
     vscode.window.showWarningMessage("QMK Lens: open a keymaps/*/keymap.c file first");
     return;
@@ -199,7 +202,7 @@ export function activate(context: vscode.ExtensionContext): void {
     out,
     diagnostics,
     vscode.commands.registerCommand("qmkLens.doctor", () => doctor(out)),
-    vscode.commands.registerCommand("qmkLens.openVisual", openVisualEditor),
+    vscode.commands.registerCommand("qmkLens.openVisual", () => openVisualEditor(provider)),
     vscode.commands.registerCommand("qmkLens.compile", (uri?: vscode.Uri) => compileKeymap(uri, provider, context, out, diagnostics)),
     vscode.commands.registerCommand("qmkLens.flash", (uri?: vscode.Uri) => flashKeymap(uri, provider)),
     vscode.commands.registerCommand("qmkLens.openToolbox", (uri?: vscode.Uri) => openToolbox(uri, provider, context)),

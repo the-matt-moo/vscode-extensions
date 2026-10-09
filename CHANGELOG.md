@@ -6,6 +6,10 @@
 - Cancel in-progress drags when the model or selected layer changes.
 - Add dependency-free webview UI smoke tests and host edit-concurrency regression tests.
 
+## 0.1.2 - 2026-10-09
+
+- Fix "Open Visual Editor" failing when the active panel is the webview or no text editor is focused.
+
 ## 0.1.1 - 2026-10-09
 
 - Fix cached rejected catalog/parser promises poisoning the session forever.
