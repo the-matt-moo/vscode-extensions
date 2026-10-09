@@ -11,9 +11,30 @@ body {
 }
 
 header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 1.15rem;
   font-weight: 600;
   margin-bottom: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.actions button {
+  padding: 5px 10px;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border: 1px solid var(--vscode-button-border, transparent);
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: var(--vscode-button-hoverBackground);
 }
 
 .banner {

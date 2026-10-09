@@ -28,13 +28,20 @@ let parserReady: Promise<void> | undefined;
 const catalogs = new Map<string, Promise<KeycodeCatalog>>();
 
 export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
+  private lastActiveDocument: vscode.TextDocument | undefined;
+
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly getRunOptions: () => RunOptions,
     private readonly resolveQmkHome: (options: RunOptions) => Promise<string>,
   ) {}
 
+  getLastActiveDocument(): vscode.TextDocument | undefined {
+    return this.lastActiveDocument;
+  }
+
   async resolveCustomTextEditor(document: vscode.TextDocument, panel: vscode.WebviewPanel): Promise<void> {
+    if (panel.active) this.lastActiveDocument = document;
     panel.webview.options = {
       enableScripts: true,
       localResourceRoots: [
@@ -99,8 +106,13 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     const documentSubscription = vscode.workspace.onDidChangeTextDocument((event) => {
       if (event.document.uri.toString() === document.uri.toString()) scheduleRefresh();
     });
+    const viewSubscription = panel.onDidChangeViewState(({ webviewPanel }) => {
+      if (webviewPanel.active) this.lastActiveDocument = document;
+    });
     const messageSubscription = panel.webview.onDidReceiveMessage((message: WebviewMessage) => {
       if (message.type === "ready") void refresh();
+      else if (message.type === "compile") void vscode.commands.executeCommand("qmkLens.compile", document.uri);
+      else if (message.type === "flash") void vscode.commands.executeCommand("qmkLens.flash", document.uri);
       else if (message.type === "editKey") void this.editKey(document, message.layer, message.key, currentState);
       else if (message.type === "swapKeys") void this.swapKeys(document, message.layer, message.a, message.b, currentState);
     });
@@ -109,6 +121,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
       disposed = true;
       if (timer) clearTimeout(timer);
       documentSubscription.dispose();
+      viewSubscription.dispose();
       messageSubscription.dispose();
     });
   }
@@ -221,7 +234,13 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
   <title>QMK Lens</title>
 </head>
 <body>
-  <header id="header">QMK Lens</header>
+  <header>
+    <span id="title">QMK Lens</span>
+    <span class="actions">
+      <button id="compile" type="button">Compile</button>
+      <button id="flash" type="button">Flash</button>
+    </span>
+  </header>
   <div id="error" class="banner error" hidden></div>
   <nav id="tabs" aria-label="Keymap layers"></nav>
   <div id="readonly" class="banner" hidden></div>

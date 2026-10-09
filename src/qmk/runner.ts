@@ -36,7 +36,7 @@ export function stripBanner(text: string): string {
     .join("");
 }
 
-function msysEnv(): NodeJS.ProcessEnv {
+export function buildMsysEnv(): NodeJS.ProcessEnv {
   const home = os.homedir();
   return { ...process.env, MSYSTEM: "MINGW64", HOME: toPosixPath(home), USERPROFILE: home };
 }
@@ -49,7 +49,7 @@ export function runShellStreaming(
 ): Promise<RunResult> {
   const bash = `${opts.msysRoot.replace(/[\\/]+$/, "")}/usr/bin/bash.exe`;
   return new Promise((resolve, reject) => {
-    const child = spawn(bash, ["-lc", cmd], { cwd: opts.cwd, env: msysEnv(), windowsHide: true });
+    const child = spawn(bash, ["-lc", cmd], { cwd: opts.cwd, env: buildMsysEnv(), windowsHide: true });
     let stdout = "";
     let stderr = "";
     child.stdout.setEncoding("utf8").on("data", (d: string) => {

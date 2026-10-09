@@ -1,14 +1,10 @@
 # Changelog
 
-## 0.0.1 - Unreleased
+## 0.1.0 - 2026-10-09
 
-- QMK MSYS runner with banner stripping and POSIX argument quoting.
-- `QMK Lens: Doctor` command: qmk version, qmk_home, toolchain presence.
-- Tree-sitter keymap parser: layers, per-key ranges, read-only detection, custom keycodes, tap dance names, `applyEdit`.
-- Geometry parser: `parseQmkInfo`, `resolveLayout` (alias resolution), `bounds` helper.
-- Geometry loader: `loadGeometry` with mtime+git-HEAD cache fingerprint.
-- Keycode catalog: version-ordered hjson merge, `!reset!` alias handling, function entries (MO/LT/LSFT_T/etc.), `buildCatalog` for custom keycodes + tap dance, `labelFor` display labels.
-- `hjson` 3.2.2 dependency added.
-- Read-only visual custom editor with QMK geometry, layer tabs, accessible keys, strict CSP, live text updates, and grid fallback.
-- Key editing through a QMK catalog Quick Pick, function templates, file-local keycodes, tap dances, and validated raw expressions.
-- Same-layer drag-and-drop key swapping in one workspace edit.
+- Visual editor with QMK geometry, layer tabs, grid fallback, strict CSP, and live text updates.
+- Key editing through the QMK catalog, function templates, raw expressions, and same-layer drag swaps.
+- QMK compile command with streamed output, diagnostics, firmware-path tracking, and save-before-build behavior.
+- Interactive QMK flash terminal and QMK Toolbox handoff for the last successful build.
+- Doctor checks for QMK, toolchains, flashing tools, and QMK Toolbox.
+- Packaged VS Code extension with bundled runtime dependencies and parser WASM files.

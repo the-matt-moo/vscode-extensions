@@ -25,5 +25,7 @@ export type HostMessage = ModelMessage;
 
 export type WebviewMessage =
   | { type: "ready" }
+  | { type: "compile" }
+  | { type: "flash" }
   | { type: "editKey"; layer: number; key: number }
   | { type: "swapKeys"; layer: number; a: number; b: number };

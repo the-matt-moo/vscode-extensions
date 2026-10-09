@@ -3,9 +3,13 @@
   "displayName": "QMK Keymap Lens",
   "description": "Visual keymap editing for QMK keymap.c files",
   "publisher": "the-matt-moo",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/the-matt-moo/qmk-keymap-lens"
+  },
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -16,6 +20,9 @@
   "activationEvents": [
     "onCommand:qmkLens.doctor",
     "onCommand:qmkLens.openVisual",
+    "onCommand:qmkLens.compile",
+    "onCommand:qmkLens.flash",
+    "onCommand:qmkLens.openToolbox",
     "onCustomEditor:qmkLens.keymap"
   ],
   "contributes": {
@@ -27,6 +34,20 @@
       {
         "command": "qmkLens.openVisual",
         "title": "QMK Lens: Open Visual Editor"
+      },
+      {
+        "command": "qmkLens.compile",
+        "title": "QMK Lens: Compile Keymap",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "qmkLens.flash",
+        "title": "QMK Lens: Flash Keymap",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "qmkLens.openToolbox",
+        "title": "QMK Lens: Open in QMK Toolbox"
       }
     ],
     "customEditors": [
@@ -47,6 +68,11 @@
           "command": "qmkLens.openVisual",
           "when": "resourceFilename == keymap.c",
           "group": "navigation"
+        },
+        {
+          "command": "qmkLens.compile",
+          "when": "resourceFilename == keymap.c",
+          "group": "navigation"
         }
       ]
     },
@@ -62,12 +88,19 @@
           "type": "string",
           "default": "",
           "description": "qmk_firmware path. Empty = use `qmk config user.qmk_home`."
+        },
+        "qmkLens.toolboxPath": {
+          "type": "string",
+          "default": "C:/Program Files/QMK Toolbox/qmk_toolbox.exe",
+          "description": "Path to QMK Toolbox."
         }
       }
     }
   },
   "scripts": {
     "build": "node scripts/build.mjs && node scripts/smoke.mjs",
+    "compile-check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/compile-check.mjs",
+    "package": "vsce package --no-dependencies",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -80,6 +113,7 @@
     "@types/hjson": "^2.4.6",
     "@types/node": "^24.19.1",
     "@types/vscode": "~1.95.0",
+    "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

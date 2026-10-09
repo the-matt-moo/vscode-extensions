@@ -12,7 +12,7 @@ interface SavedState {
 }
 
 const vscode = acquireVsCodeApi<SavedState>();
-const header = element("header");
+const title = element("title");
 const tabs = element("tabs");
 const keyboard = element("keyboard");
 const errorBanner = element("error");
@@ -21,6 +21,9 @@ const positionSheet = getPositionSheet();
 let model: HostMessage | undefined;
 let selectedLayer = vscode.getState()?.selectedLayer;
 let dragged: { layer: number; key: number } | undefined;
+
+element("compile").addEventListener("click", () => vscode.postMessage({ type: "compile" }));
+element("flash").addEventListener("click", () => vscode.postMessage({ type: "flash" }));
 
 window.addEventListener("message", (event: MessageEvent<HostMessage>) => {
   if (event.data.type !== "model") return;
@@ -37,7 +40,7 @@ function render(): void {
   const layerIndex = Math.max(0, model.layers.findIndex((layer) => layer.designator === selectedLayer));
   const layer = model.layers[layerIndex];
 
-  header.textContent = layer
+  title.textContent = layer
     ? `${model.keyboard} / ${model.keymap} — ${layer.layoutMacro}`
     : `${model.keyboard} / ${model.keymap}`;
   showBanner(errorBanner, model.error);

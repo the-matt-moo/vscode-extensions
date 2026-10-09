@@ -1,0 +1,14 @@
+.codegraph/**
+.github/**
+.vitest/**
+graphify-out/**
+node_modules/**
+research/**
+scripts/**
+src/**
+test/**
+**/*.map
+*.vsix
+.gitignore
+.gitattributes
+tsconfig.json
