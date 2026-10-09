@@ -7,7 +7,21 @@ VS Code extension (in progress) for visual editing of QMK `keymap.c` files. Edit
 
 - M0 done: QMK MSYS runner, `QMK Lens: Doctor` command.
 - M1 done: pure `KeymapModel` parser (`src/model/keymap.ts`).
+- M2 done: geometry loader + keycode catalog (`src/model/geometry.ts`, `src/qmk/geometryLoader.ts`, `src/model/keycodes.ts`).
 - No UI yet.
+
+### Moonlander keymap-level keyboard.json
+
+`zsa/moonlander/keymaps/moo/keyboard.json` exists but does **not** change geometry.
+`qmk info -km moo` and `-km default` produce identical layouts (`LAYOUT`: 72 keys,
+`LAYOUT_halfmoon`: 36 keys) and the same alias (`LAYOUT_moonlander` → `LAYOUT`).
+The keymap-level file likely only configures features/settings, not physical layout.
+`qmk info -km <km>` still merges it, so always passing `-km` is correct.
+
+### Lily58 revision resolution
+
+`qmk info -kb lily58 -km moo` resolves automatically to `lily58/rev1`. No explicit
+revision is needed in the `-kb` argument.
 
 ## Settings
 

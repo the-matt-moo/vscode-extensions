@@ -1,0 +1,13 @@
+{
+    "keycodes": {
+        "0x00CD": {
+            "group": "mouse",
+            "key": "QK_MOUSE_CURSOR_UP",
+            "label": "Mouse cursor up",
+            "aliases": [
+                "!reset!",
+                "MS_UP"
+            ]
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "keycodes": {
+        "0x00C1": {
+            "group": "media",
+            "key": "KC_MISSION_CONTROL",
+            "label": "Open Mission Control",
+            "aliases": [
+                "KC_MCTL"
+            ]
+        }
+    }
+}

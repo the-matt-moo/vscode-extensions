@@ -1,0 +1,64 @@
+{
+    "keycodes": {
+        "0x0000": {
+            "group": "internal",
+            "key": "KC_NO",
+            "label": "",
+            "aliases": [
+                "XXXXXXX"
+            ]
+        },
+        "0x0001": {
+            "group": "internal",
+            "key": "KC_TRANSPARENT",
+            "label": "",
+            "aliases": [
+                "_______",
+                "KC_TRNS"
+            ]
+        },
+        "0x0004": {
+            "group": "basic",
+            "key": "KC_A",
+            "label": "A"
+        },
+        "0x0005": {
+            "group": "basic",
+            "key": "KC_B",
+            "label": "B"
+        },
+        "0x0029": {
+            "group": "basic",
+            "key": "KC_ESCAPE",
+            "label": "Escape",
+            "aliases": [
+                "KC_ESC"
+            ]
+        },
+        "0x00E0": {
+            "group": "modifier",
+            "key": "KC_LEFT_CTRL",
+            "label": "Left Ctrl",
+            "aliases": [
+                "KC_LCTL"
+            ]
+        },
+        "0x00E1": {
+            "group": "modifier",
+            "key": "KC_LEFT_SHIFT",
+            "label": "Left Shift",
+            "aliases": [
+                "KC_LSFT"
+            ]
+        },
+        "0x00CD": {
+            "group": "mouse",
+            "key": "MS_UP",
+            "label": "Mouse cursor up",
+            "aliases": [
+                "KC_MS_UP",
+                "KC_MS_U"
+            ]
+        }
+    }
+}
