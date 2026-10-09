@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 - 2026-10-09
+
+- Fix cached rejected catalog/parser promises poisoning the session forever.
+- Fix concurrent refresh race where a slow refresh could overwrite newer data.
+- Fix unquoted `qmkHome` in geometry cache git command (shell injection with `'` in path).
+
 ## 0.1.0 - 2026-10-09
 
 - Visual editor with QMK geometry, layer tabs, grid fallback, strict CSP, and live text updates.

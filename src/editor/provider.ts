@@ -55,6 +55,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let resourcesPromise: Promise<Resources> | undefined;
+    let refreshSeq = 0;
 
     const resources = (): Promise<Resources> => resourcesPromise ??= parsedPath
       ? this.loadResources(parsedPath.keyboard, parsedPath.keymap)
@@ -75,13 +76,14 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     };
 
     const refresh = async (): Promise<void> => {
+      const seq = ++refreshSeq;
       if (!parsedPath || disposed) {
         if (!disposed) await panel.webview.postMessage(errorModel("", "", "This is not a QMK keymap.c path"));
         return;
       }
       try {
         const state = await currentState();
-        if (disposed) return;
+        if (disposed || seq !== refreshSeq) return;
         const view = buildViewModel(state.model, state.resources.geometry, state.catalog);
         const error = [state.resources.error, view.error].filter(Boolean).join("; ") || undefined;
         const message: HostMessage = {
@@ -94,7 +96,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
         };
         await panel.webview.postMessage(message);
       } catch (error) {
-        if (!disposed) await panel.webview.postMessage(errorModel(parsedPath.keyboard, parsedPath.keymap, messageOf(error)));
+        if (!disposed && seq === refreshSeq) await panel.webview.postMessage(errorModel(parsedPath.keyboard, parsedPath.keymap, messageOf(error)));
       }
     };
 
@@ -128,7 +130,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
 
   private ensureParser(): Promise<void> {
     const dist = vscode.Uri.joinPath(this.context.extensionUri, "dist").fsPath;
-    return parserReady ??= initParser(dist);
+    return parserReady ??= initParser(dist).catch((e) => { parserReady = undefined; throw e; });
   }
 
   private async loadResources(keyboard: string, keymap: string): Promise<Resources> {
@@ -153,7 +155,10 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     ]);
     const errors: string[] = [];
     if (geometry.status === "rejected") errors.push(`Geometry: ${messageOf(geometry.reason)}`);
-    if (catalog.status === "rejected") errors.push(`Keycodes: ${messageOf(catalog.reason)}`);
+    if (catalog.status === "rejected") {
+      catalogs.delete(home);
+      errors.push(`Keycodes: ${messageOf(catalog.reason)}`);
+    }
     return {
       geometry: geometry.status === "fulfilled" ? geometry.value : null,
       catalog: catalog.status === "fulfilled" ? catalog.value : emptyCatalog(),

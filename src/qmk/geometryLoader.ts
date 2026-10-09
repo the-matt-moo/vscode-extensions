@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from "node:fs";
 import * as path from "node:path";
 import { type Geometry, parseQmkInfo } from "../model/geometry";
-import { run, runShell, type RunOptions } from "./runner";
+import { run, runShell, shQuote, type RunOptions } from "./runner";
 
 export interface LoadOptions {
   msysRoot: string;
@@ -94,7 +94,7 @@ function writeCache(cacheDir: string, kb: string, km: string, key: CacheKey, dat
 
 async function getGitHead(opts: RunOptions, qmkHome: string): Promise<string> {
   try {
-    const r = await runShell(`git -C '${qmkHome.replace(/\\/g, "/")}' rev-parse HEAD`, opts);
+    const r = await runShell(`git -C ${shQuote(qmkHome.replace(/\\/g, "/"))} rev-parse HEAD`, opts);
     return r.code === 0 ? r.stdout.trim() : "";
   } catch {
     return "";
