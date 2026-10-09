@@ -1,14 +1,27 @@
 # QMK Keymap Lens
 
-VS Code extension (in progress) for visual editing of QMK `keymap.c` files. Edits splice single
+VS Code extension for visual editing of QMK `keymap.c` files. Edits splice single
 `LAYOUT(...)` arguments in place via tree-sitter; the rest of the file is never regenerated.
 
-## Status
+## Features
 
-- M0 done: QMK MSYS runner, `QMK Lens: Doctor` command.
-- M1 done: pure `KeymapModel` parser (`src/model/keymap.ts`).
-- M2 done: geometry loader + keycode catalog (`src/model/geometry.ts`, `src/qmk/geometryLoader.ts`, `src/model/keycodes.ts`).
-- No UI yet.
+- Visual keyboard geometry from `qmk info`, with layer tabs and a grid fallback.
+- Keycode picker with QMK catalog entries, file-local custom keycodes, tap dances, function templates, and validated raw expressions.
+- Drag one key onto another in the same layer to swap them in one undo step.
+- Live 150 ms updates when the text editor changes.
+- Unsafe or key-count-mismatched layers remain visible but read-only.
+- `QMK Lens: Doctor` checks QMK MSYS, qmk_home, and toolchain programs.
+
+## Open the visual editor
+
+1. Open a `keyboards/<keyboard>/keymaps/<keymap>/keymap.c` file.
+2. Run **QMK Lens: Open Visual Editor** from the Command Palette or use the editor-title action.
+
+The visual editor opens beside the text file. You can also use **Reopen Editor With...** and choose **QMK Lens Visual Editor**.
+
+## Limits
+
+QMK Lens does not add, remove, or reorder layers, edit macro/tap-dance/combo bodies, reformat C, compile, or flash. Layers containing parser errors or preprocessor directives are read-only. If geometry cannot be loaded or a layout macro is unknown, keys use an argument-order grid; verify physical positions before editing or swapping.
 
 ### Moonlander keymap-level keyboard.json
 
@@ -46,5 +59,5 @@ revision is needed in the `-kb` argument.
 npm install
 npm run typecheck
 npm test        # live QMK test skips if C:/QMK_MSYS is absent
-npm run build   # dist/extension.js + wasm
+npm run build   # dist/extension.js + dist/webview.js + wasm
 ```

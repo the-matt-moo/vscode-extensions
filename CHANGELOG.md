@@ -9,3 +9,6 @@
 - Geometry loader: `loadGeometry` with mtime+git-HEAD cache fingerprint.
 - Keycode catalog: version-ordered hjson merge, `!reset!` alias handling, function entries (MO/LT/LSFT_T/etc.), `buildCatalog` for custom keycodes + tap dance, `labelFor` display labels.
 - `hjson` 3.2.2 dependency added.
+- Read-only visual custom editor with QMK geometry, layer tabs, accessible keys, strict CSP, live text updates, and grid fallback.
+- Key editing through a QMK catalog Quick Pick, function templates, file-local keycodes, tap dances, and validated raw expressions.
+- Same-layer drag-and-drop key swapping in one workspace edit.

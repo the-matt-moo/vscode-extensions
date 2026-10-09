@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light dark;
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+}
+
+header {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.banner {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--vscode-editorWarning-foreground);
+  background: var(--vscode-textBlockQuote-background);
+}
+
+.banner.error {
+  border-color: var(--vscode-errorForeground);
+  color: var(--vscode-errorForeground);
+}
+
+#tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 12px 0;
+}
+
+button {
+  font: inherit;
+}
+
+.tab {
+  padding: 5px 10px;
+  color: var(--vscode-button-secondaryForeground);
+  background: var(--vscode-button-secondaryBackground);
+  border: 1px solid var(--vscode-contrastBorder, transparent);
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+
+#keyboard {
+  overflow: auto;
+  padding: 8px 0;
+}
+
+.key-canvas {
+  position: relative;
+  min-width: 1px;
+  min-height: 1px;
+}
+
+.key {
+  position: absolute;
+  overflow: hidden;
+  padding: 3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border: 1px solid var(--vscode-button-border, var(--vscode-panel-border));
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.key:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.key:disabled {
+  color: var(--vscode-disabledForeground);
+  background: var(--vscode-input-background);
+  cursor: not-allowed;
+}
+
+.loading {
+  color: var(--vscode-descriptionForeground);
+}

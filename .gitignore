@@ -3,3 +3,5 @@ dist
 out
 *.vsix
 .vitest/
+.codegraph/
+graphify-out/

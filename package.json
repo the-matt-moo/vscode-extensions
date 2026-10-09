@@ -14,15 +14,42 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onCommand:qmkLens.doctor"
+    "onCommand:qmkLens.doctor",
+    "onCommand:qmkLens.openVisual",
+    "onCustomEditor:qmkLens.keymap"
   ],
   "contributes": {
     "commands": [
       {
         "command": "qmkLens.doctor",
         "title": "QMK Lens: Doctor"
+      },
+      {
+        "command": "qmkLens.openVisual",
+        "title": "QMK Lens: Open Visual Editor"
       }
     ],
+    "customEditors": [
+      {
+        "viewType": "qmkLens.keymap",
+        "displayName": "QMK Lens Visual Editor",
+        "selector": [
+          {
+            "filenamePattern": "**/keymaps/*/keymap.c"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "qmkLens.openVisual",
+          "when": "resourceFilename == keymap.c",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "QMK Keymap Lens",
       "properties": {
@@ -40,7 +67,7 @@
     }
   },
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "node scripts/build.mjs && node scripts/smoke.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
