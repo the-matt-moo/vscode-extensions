@@ -19,7 +19,7 @@ VS Code extension for visual editing and building of QMK `keymap.c` files. Edits
 
 1. Run **QMK Lens: Open Visual Editor** or use the editor-title action. **Reopen Editor With...** also lists **QMK Lens Visual Editor**.
 2. Select a layer and click a key to choose a catalog entry, function template, file-local keycode, tap dance, or validated raw expression.
-3. Drag one key onto another in the same layer to swap both in one undo step.
+3. Drag one key onto another in the same layer to swap both in one undo step. Model updates or layer switches cancel an in-progress drag. If the document changes while a key picker is open, the selection is discarded with a warning; select the key again.
 4. Select **Compile** in the visual editor or run **QMK Lens: Compile Keymap**. The document is saved, output streams to **QMK Lens**, compiler errors appear as `qmk` diagnostics, and the produced firmware path is remembered.
 5. Select **Flash** or run **QMK Lens: Flash Keymap**. An interactive QMK MSYS terminal opens so the board can enter its bootloader. QMK Lens never flashes without this command.
 6. Run **QMK Lens: Open in QMK Toolbox** to open the last successfully built `.hex`, `.bin`, or `.uf2` file.
@@ -63,5 +63,7 @@ npm test
 npm run build
 npm run package
 ```
+
+`npm test` includes dependency-free DOM smoke tests for webview rendering/messages and mocked-host regression tests for stale picker edits. These do not verify browser layout, CSP enforcement, or live VS Code integration.
 
 `npm run build` bundles extension/runtime dependencies into `dist/extension.js` and `dist/webview.js`, then copies `tree-sitter.wasm` and `tree-sitter-c.wasm` into `dist/`. Run real compile checks only with `QMK_LIVE=1 npm run compile-check`; they write QMK build output under the configured checkout's `.build/` directory.

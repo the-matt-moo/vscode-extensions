@@ -173,7 +173,9 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     getState: () => Promise<CurrentState>,
   ): Promise<void> {
     try {
+      const version = document.version;
       const state = await getState();
+      if (document.version !== version) return void vscode.window.showWarningMessage("QMK Lens: document changed; select the key again");
       const layer = state.model.layers[layerIndex];
       const key = layer?.keys[keyIndex];
       const reason = buildViewModel(state.model, state.resources.geometry, state.catalog).layers[layerIndex]?.readOnlyReason;
@@ -185,16 +187,11 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
       const validation = validateRawExpression(expression);
       if (validation) return void vscode.window.showWarningMessage(`QMK Lens: ${validation}`);
 
-      // Reparse after the picker closes so offsets always match the current document.
-      const fresh = await getState();
-      const freshLayer = fresh.model.layers[layerIndex];
-      const freshKey = freshLayer?.keys[keyIndex];
-      const freshReason = buildViewModel(fresh.model, fresh.resources.geometry, fresh.catalog).layers[layerIndex]?.readOnlyReason;
-      if (freshReason) return void vscode.window.showWarningMessage(`QMK Lens: ${freshReason}`);
-      if (!freshKey) return void vscode.window.showWarningMessage("QMK Lens: key no longer exists");
+      // Numeric indices can point to a different key after any external edit.
+      if (document.version !== version) return void vscode.window.showWarningMessage("QMK Lens: document changed; select the key again");
 
       const edit = new vscode.WorkspaceEdit();
-      edit.replace(document.uri, rangeFor(document, freshKey.start, freshKey.end), expression);
+      edit.replace(document.uri, rangeFor(document, key.start, key.end), expression);
       if (!await vscode.workspace.applyEdit(edit)) vscode.window.showErrorMessage("QMK Lens could not apply the edit");
     } catch (error) {
       vscode.window.showErrorMessage(`QMK Lens: ${messageOf(error)}`);
@@ -209,7 +206,9 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     getState: () => Promise<CurrentState>,
   ): Promise<void> {
     try {
+      const version = document.version;
       const state = await getState();
+      if (document.version !== version) return void vscode.window.showWarningMessage("QMK Lens: document changed; select the keys again");
       const reason = buildViewModel(state.model, state.resources.geometry, state.catalog).layers[layerIndex]?.readOnlyReason;
       if (reason) return void vscode.window.showWarningMessage(`QMK Lens: ${reason}`);
       const replacements = computeSwapEdits(state.model, layerIndex, a, b);

@@ -37,6 +37,7 @@ vscode.postMessage({ type: "ready" });
 
 function render(): void {
   if (!model) return;
+  dragged = undefined;
   const layerIndex = Math.max(0, model.layers.findIndex((layer) => layer.designator === selectedLayer));
   const layer = model.layers[layerIndex];
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 - 2026-10-09
+
+- Cancel key-picker edits when the document changes, including during initial loading; reject stale swaps during loading.
+- Cancel in-progress drags when the model or selected layer changes.
+- Add dependency-free webview UI smoke tests and host edit-concurrency regression tests.
+
 ## 0.1.1 - 2026-10-09
 
 - Fix cached rejected catalog/parser promises poisoning the session forever.
