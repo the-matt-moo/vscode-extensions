@@ -1,7 +1,7 @@
 import { resolveLayout, type Geometry, type KeyGeom } from "../model/geometry";
 import { labelFor, type KeycodeCatalog } from "../model/keycodes";
 import type { KeymapModel } from "../model/keymap";
-import type { ViewLayer } from "../shared/protocol";
+import type { ViewEncoder, ViewLayer } from "../shared/protocol";
 
 export interface EditorViewModel {
   layers: ViewLayer[];
@@ -37,6 +37,7 @@ export function buildViewModel(
       layoutMacro: layer.layoutMacro,
       ...(layer.readOnlyReason || mismatch ? { readOnlyReason: layer.readOnlyReason ?? mismatch } : {}),
       keys: layer.keys.map((key) => ({ text: key.text, label: labelFor(key.text, catalog) })),
+      ...encodersForLayer(model, index, catalog),
     };
   });
 
@@ -44,6 +45,22 @@ export function buildViewModel(
     layers,
     geometry: keys ? { keys } : null,
     ...(error ? { error } : {}),
+  };
+}
+
+function encodersForLayer(
+  model: KeymapModel,
+  index: number,
+  catalog: KeycodeCatalog,
+): { encoders: ViewEncoder[] } | Record<string, never> {
+  const bindings = model.encoderMap?.[index] ?? model.encoderBindings ?? [];
+  if (!bindings.length) return {};
+  return {
+    encoders: bindings.map((e): ViewEncoder => ({
+      cw: e.cw, ccw: e.ccw,
+      cwLabel: labelFor(e.cw, catalog),
+      ccwLabel: labelFor(e.ccw, catalog),
+    })),
   };
 }
 

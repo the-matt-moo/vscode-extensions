@@ -20,8 +20,17 @@ export interface Layer {
   readOnlyReason?: string;
 }
 
+export interface EncoderBinding {
+  cw: string;
+  ccw: string;
+}
+
 export interface KeymapModel {
   layers: Layer[];
+  /** Per-layer encoder bindings from encoder_map[layer][encoder]. */
+  encoderMap?: EncoderBinding[][];
+  /** Global encoder bindings from encoder_update_user (when encoder_map is absent). */
+  encoderBindings?: EncoderBinding[];
   customKeycodes: string[];
   tapDanceNames: string[];
   error?: string;
@@ -115,6 +124,16 @@ export function parseKeymap(source: string): KeymapModel {
       model.layers.push(layer);
     }
     if (arrayReason) for (const l of model.layers) l.readOnlyReason ??= arrayReason;
+
+    // Encoder bindings: prefer declarative encoder_map, fall back to encoder_update_user extraction
+    const encoderMap = parseEncoderMap(root);
+    if (encoderMap) {
+      model.encoderMap = encoderMap;
+    } else {
+      const bindings = extractOldStyleEncoders(root);
+      if (bindings.length) model.encoderBindings = bindings;
+    }
+
     return model;
   } finally {
     tree.delete();
@@ -165,6 +184,117 @@ function tapDances(root: Node): string[] {
     if (names.some((n) => used.has(n))) names.forEach((n) => out.add(n));
   }
   return [...out];
+}
+
+// -- Encoder parsing --
+
+/** Parse `encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS]` (new-style declarative encoders). */
+function parseEncoderMap(root: Node): EncoderBinding[][] | undefined {
+  for (const d of walk(root)) {
+    if (d.type !== "init_declarator") continue;
+    let decl = d.childForFieldName("declarator");
+    while (decl && decl.type !== "identifier") decl = decl.childForFieldName("declarator");
+    const value = d.childForFieldName("value");
+    if (decl?.text !== "encoder_map" || value?.type !== "initializer_list") continue;
+
+    const layers: EncoderBinding[][] = [];
+    for (const item of kids(value.children)) {
+      if (item.type === "comment" || (["{" , "}", ","].includes(item.type) && !item.isMissing)) continue;
+      const listNode = item.type === "initializer_pair" ? item.childForFieldName("value") : item;
+      if (listNode?.type !== "initializer_list") continue;
+      const encoders: EncoderBinding[] = [];
+      for (const enc of kids(listNode.children)) {
+        if (enc.type === "comment" || (["{" , "}", ","].includes(enc.type) && !enc.isMissing)) continue;
+        const call = enc.type === "call_expression" ? enc : undefined;
+        if (call) {
+          const fn = call.childForFieldName("function");
+          if (fn?.text === "ENCODER_CCW_CW") {
+            const args = kids(call.childForFieldName("arguments")!.namedChildren).filter((a) => a.type !== "comment");
+            if (args.length >= 2) encoders.push({ cw: args[1].text, ccw: args[0].text });
+          }
+        }
+      }
+      layers.push(encoders);
+    }
+    return layers.length ? layers : undefined;
+  }
+  return undefined;
+}
+
+/** Extract encoder bindings from encoder_update_user (old-style callback). Best-effort. */
+function extractOldStyleEncoders(root: Node): EncoderBinding[] {
+  for (const d of walk(root)) {
+    if (d.type !== "function_definition") continue;
+    let decl = d.childForFieldName("declarator");
+    while (decl && decl.type !== "identifier") decl = decl.childForFieldName("declarator");
+    if (decl?.text !== "encoder_update_user") continue;
+    const body = d.childForFieldName("body");
+    if (!body) return [];
+
+    const bindings = new Map<number, EncoderBinding>();
+    for (const n of walk(body)) {
+      // Pattern 1: ternary — tap_code16(clockwise ? CW : CCW)
+      if (n.type === "conditional_expression") {
+        const cond = n.childForFieldName("condition");
+        if (!cond || !isClockwiseNode(cond)) continue;
+        const neg = cond.text.includes("!");
+        const a = n.childForFieldName("consequence");
+        const b = n.childForFieldName("alternative");
+        if (a && b) bindings.set(encoderIndexOf(n), { cw: neg ? b.text : a.text, ccw: neg ? a.text : b.text });
+      }
+      // Pattern 2: if (clockwise) { tap_code(CW); } else { tap_code(CCW); }
+      if (n.type === "if_statement") {
+        const cond = n.childForFieldName("condition");
+        if (!cond || !isClockwiseNode(unwrap(cond))) continue;
+        const neg = cond.text.includes("!");
+        const cwBranch = neg ? n.childForFieldName("alternative") : n.childForFieldName("consequence");
+        const ccwBranch = neg ? n.childForFieldName("consequence") : n.childForFieldName("alternative");
+        const cw = cwBranch && firstTapArg(cwBranch);
+        const ccw = ccwBranch && firstTapArg(ccwBranch);
+        if (cw && ccw) bindings.set(encoderIndexOf(n), { cw, ccw });
+      }
+    }
+    return [...bindings].sort((a, b) => a[0] - b[0]).map(([, v]) => v);
+  }
+  return [];
+}
+
+function isClockwiseNode(n: Node): boolean {
+  const t = n.text.replace(/[()]/g, "").trim();
+  return t === "clockwise" || t === "!clockwise";
+}
+
+function unwrap(n: Node): Node {
+  while (n.type === "parenthesized_expression" && n.namedChildren[0]) n = n.namedChildren[0];
+  return n;
+}
+
+/** Walk ancestors looking for if (index == N). */
+function encoderIndexOf(n: Node): number {
+  let p = n.parent;
+  while (p) {
+    if (p.type === "if_statement") {
+      const c = p.childForFieldName("condition");
+      const m = c && /index\s*==\s*(\d+)/.exec(c.text);
+      if (m) return Number(m[1]);
+    }
+    p = p.parent;
+  }
+  return 0;
+}
+
+function firstTapArg(n: Node): string | undefined {
+  for (const d of walk(n)) {
+    if (d.type === "call_expression") {
+      const fn = d.childForFieldName("function");
+      if (fn && /^(?:tap_code|tap_code16|register_code|register_code16)$/.test(fn.text)) {
+        const args = d.childForFieldName("arguments");
+        const arg = args && kids(args.namedChildren).find((a) => a.type !== "comment");
+        return arg?.text;
+      }
+    }
+  }
+  return undefined;
 }
 
 /** Replace one key's text by its UTF-16 range. */

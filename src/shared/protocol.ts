@@ -5,11 +5,19 @@ export interface ViewKey {
   label: string;
 }
 
+export interface ViewEncoder {
+  cw: string;
+  ccw: string;
+  cwLabel: string;
+  ccwLabel: string;
+}
+
 export interface ViewLayer {
   designator: string;
   layoutMacro: string;
   readOnlyReason?: string;
   keys: ViewKey[];
+  encoders?: ViewEncoder[];
 }
 
 export interface ModelMessage {

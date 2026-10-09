@@ -142,6 +142,53 @@ describe("keymap model", () => {
   });
 });
 
+describe("encoder extraction", () => {
+  it("extracts CU7 ternary encoder binding (tap_code16 + clockwise ? CW : CCW)", () => {
+    const m = parseKeymap(fixture("cu7_tench"));
+    expect(m.encoderBindings).toEqual([{ cw: "C(S(KC_V))", ccw: "C(S(A(KC_V)))" }]);
+    expect(m.encoderMap).toBeUndefined();
+  });
+
+  it("extracts lily58 if/else encoder binding", () => {
+    const m = parseKeymap(fixture("lily58_moo"));
+    expect(m.encoderBindings).toEqual([{ cw: "KC_LEFT", ccw: "KC_RIGHT" }]);
+  });
+
+  it("returns no encoder data when no encoder function exists", () => {
+    const m = parseKeymap(fixture("moonlander_moo"));
+    expect(m.encoderBindings).toBeUndefined();
+    expect(m.encoderMap).toBeUndefined();
+  });
+
+  it("parses encoder_map (new-style declarative)", () => {
+    const src = [
+      "const uint16_t PROGMEM keymaps[][1][1] = { [0] = LAYOUT(KC_A) };",
+      "const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {",
+      "  [0] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },",
+      "};",
+    ].join("\n");
+    const m = parseKeymap(src);
+    expect(m.encoderMap).toEqual([[{ cw: "KC_VOLU", ccw: "KC_VOLD" }]]);
+    expect(m.encoderBindings).toBeUndefined();
+  });
+
+  it("handles multiple encoders with index checks", () => {
+    const src = [
+      "const uint16_t PROGMEM keymaps[][1][1] = { [0] = LAYOUT(KC_A) };",
+      "bool encoder_update_user(uint8_t index, bool clockwise) {",
+      "  if (index == 0) { if (clockwise) { tap_code(KC_UP); } else { tap_code(KC_DOWN); } }",
+      "  else if (index == 1) { if (clockwise) { tap_code(KC_LEFT); } else { tap_code(KC_RIGHT); } }",
+      "  return false;",
+      "}",
+    ].join("\n");
+    const m = parseKeymap(src);
+    expect(m.encoderBindings).toEqual([
+      { cw: "KC_UP", ccw: "KC_DOWN" },
+      { cw: "KC_LEFT", ccw: "KC_RIGHT" },
+    ]);
+  });
+});
+
 describe("parsePath", () => {
   it.each([
     [String.raw`C:\Users\T\qmk_firmware\keyboards\zsa\moonlander\keymaps\new_moo\keymap.c`, { keyboard: "zsa/moonlander", keymap: "new_moo" }],

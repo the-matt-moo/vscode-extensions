@@ -249,6 +249,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
   <nav id="tabs" aria-label="Keymap layers"></nav>
   <div id="readonly" class="banner" hidden></div>
   <main id="keyboard" aria-live="polite"><p class="loading">Loading keyboard geometry…</p></main>
+  <section id="encoders" hidden></section>
   <script nonce="${nonce}" src="${script}"></script>
 </body>
 </html>`;

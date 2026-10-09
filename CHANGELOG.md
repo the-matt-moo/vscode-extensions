@@ -6,6 +6,12 @@
 - Cancel in-progress drags when the model or selected layer changes.
 - Add dependency-free webview UI smoke tests and host edit-concurrency regression tests.
 
+## 0.2.0 - 2026-10-09
+
+- Show rotary encoder CW/CCW bindings below the keyboard (old-style `encoder_update_user` and new-style `encoder_map`).
+- Fix key label truncation: labels now wrap and are centered instead of being clipped with ellipsis.
+- Center the keyboard layout horizontally within the visualizer viewport.
+
 ## 0.1.2 - 2026-10-09
 
 - Fix "Open Visual Editor" failing when the active panel is the webview or no text editor is focused.

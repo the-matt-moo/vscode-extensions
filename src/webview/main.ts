@@ -1,4 +1,4 @@
-import type { HostMessage, ViewLayer, WebviewMessage } from "../shared/protocol";
+import type { HostMessage, ViewEncoder, ViewLayer, WebviewMessage } from "../shared/protocol";
 import type { KeyGeom } from "../model/geometry";
 
 declare function acquireVsCodeApi<T = unknown>(): {
@@ -17,6 +17,7 @@ const tabs = element("tabs");
 const keyboard = element("keyboard");
 const errorBanner = element("error");
 const readOnlyBanner = element("readonly");
+const encoderSection = element("encoders");
 const positionSheet = getPositionSheet();
 let model: HostMessage | undefined;
 let selectedLayer = vscode.getState()?.selectedLayer;
@@ -67,6 +68,7 @@ function render(): void {
   positionSheet.insertRule(`.canvas-size { width: ${maxX * 54}px; height: ${maxY * 54}px; }`);
   canvas.append(...layer.keys.map((key, keyIndex) => keyButton(layer, layerIndex, keyIndex, geometry[keyIndex])));
   keyboard.append(canvas);
+  renderEncoders(layer);
 }
 
 function layerTab(layer: ViewLayer, selected: boolean): HTMLButtonElement {
@@ -118,6 +120,31 @@ function keyButton(
   });
   button.addEventListener("dragend", () => { dragged = undefined; });
   return button;
+}
+
+function renderEncoders(layer: ViewLayer | undefined): void {
+  const list = layer?.encoders;
+  if (!list?.length) { encoderSection.hidden = true; return; }
+  encoderSection.hidden = false;
+  encoderSection.replaceChildren(...list.map((enc, i) => encoderRow(enc, i, list.length > 1)));
+}
+
+function encoderRow(enc: ViewEncoder, index: number, showIndex: boolean): HTMLElement {
+  const row = document.createElement("div");
+  row.className = "encoder";
+  const label = document.createElement("span");
+  label.className = "encoder-name";
+  label.textContent = showIndex ? `Encoder ${index}` : "Encoder";
+  const ccw = document.createElement("span");
+  ccw.className = "encoder-dir";
+  ccw.textContent = `\u21BA ${enc.ccwLabel}`;
+  ccw.title = enc.ccw;
+  const cw = document.createElement("span");
+  cw.className = "encoder-dir";
+  cw.textContent = `\u21BB ${enc.cwLabel}`;
+  cw.title = enc.cw;
+  row.append(label, ccw, cw);
+  return row;
 }
 
 function gridGeometry(count: number): KeyGeom[] {

@@ -87,14 +87,21 @@ button:focus-visible {
   position: relative;
   min-width: 1px;
   min-height: 1px;
+  margin: 0 auto;
 }
 
 .key {
   position: absolute;
   overflow: hidden;
-  padding: 3px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.2;
+  display: grid;
+  place-content: center;
   color: var(--vscode-button-foreground);
   background: var(--vscode-button-background);
   border: 1px solid var(--vscode-button-border, var(--vscode-panel-border));
@@ -114,4 +121,31 @@ button:focus-visible {
 
 .loading {
   color: var(--vscode-descriptionForeground);
+}
+
+/* Encoder section */
+#encoders {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.encoder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  background: var(--vscode-textBlockQuote-background);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.encoder-name {
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.encoder-dir {
+  font-family: var(--vscode-editor-font-family, monospace);
 }

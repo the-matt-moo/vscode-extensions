@@ -58,4 +58,25 @@ describe("buildViewModel", () => {
     expect(view.geometry).toBeNull();
     expect(view.layers[0].readOnlyReason).toBeUndefined();
   });
+
+  it("maps global encoder bindings to ViewEncoder", () => {
+    const withEncoders = { ...model, encoderBindings: [{ cw: "KC_VOLU", ccw: "KC_VOLD" }] };
+    const view = buildViewModel(withEncoders, geometry, catalog);
+    expect(view.layers[0].encoders).toEqual([{ cw: "KC_VOLU", ccw: "KC_VOLD", cwLabel: "KC_VOLU", ccwLabel: "KC_VOLD" }]);
+  });
+
+  it("prefers encoderMap over encoderBindings per layer", () => {
+    const withMap = {
+      ...model,
+      encoderBindings: [{ cw: "KC_A", ccw: "KC_B" }],
+      encoderMap: [[{ cw: "KC_UP", ccw: "KC_DOWN" }]],
+    };
+    const view = buildViewModel(withMap, geometry, catalog);
+    expect(view.layers[0].encoders![0].cw).toBe("KC_UP");
+  });
+
+  it("omits encoders when no encoder data exists", () => {
+    const view = buildViewModel(model, geometry, catalog);
+    expect(view.layers[0].encoders).toBeUndefined();
+  });
 });

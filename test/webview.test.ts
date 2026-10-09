@@ -34,7 +34,7 @@ const message: HostMessage = {
 };
 
 function webview(savedState?: { selectedLayer: string }) {
-  const elements = Object.fromEntries(["title", "tabs", "keyboard", "error", "readonly", "positions", "compile", "flash"]
+  const elements = Object.fromEntries(["title", "tabs", "keyboard", "error", "readonly", "positions", "compile", "flash", "encoders"]
     .map((id) => [id, new Element()]));
   const sheet = {
     cssRules: [] as string[],
@@ -185,5 +185,23 @@ describe("webview UI smoke", () => {
     expect(view.elements.error.hidden).toBe(false);
     view.receive({ type: "unrelated" });
     expect(view.elements.keyboard.textContent).toBe("No keymap layers found.");
+  });
+
+  it("renders encoder section when layer has encoder data", () => {
+    const view = webview();
+    const withEncoders = {
+      ...message,
+      layers: message.layers.map((l, i) => i === 0
+        ? { ...l, encoders: [{ cw: "KC_VOLU", ccw: "KC_VOLD", cwLabel: "Vol+", ccwLabel: "Vol-" }] }
+        : l),
+    };
+    view.receive(withEncoders);
+    expect(view.elements.encoders.hidden).toBe(false);
+    expect(view.elements.encoders.children).toHaveLength(1);
+    expect(view.elements.encoders.children[0].textContent).toContain("Vol-");
+    expect(view.elements.encoders.children[0].textContent).toContain("Vol+");
+    // Switch to _FN (no encoders) -> section hidden
+    view.elements.tabs.children[1].click();
+    expect(view.elements.encoders.hidden).toBe(true);
   });
 });
