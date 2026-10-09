@@ -68,7 +68,7 @@ function render(): void {
   positionSheet.insertRule(`.canvas-size { width: ${maxX * 54}px; height: ${maxY * 54}px; }`);
   canvas.append(...layer.keys.map((key, keyIndex) => keyButton(layer, layerIndex, keyIndex, geometry[keyIndex])));
   keyboard.append(canvas);
-  renderEncoders(layer);
+  renderEncoders(layer, layerIndex);
 }
 
 function layerTab(layer: ViewLayer, selected: boolean): HTMLButtonElement {
@@ -122,27 +122,38 @@ function keyButton(
   return button;
 }
 
-function renderEncoders(layer: ViewLayer | undefined): void {
+function renderEncoders(layer: ViewLayer | undefined, layerIndex: number): void {
   const list = layer?.encoders;
   if (!list?.length) { encoderSection.hidden = true; return; }
   encoderSection.hidden = false;
-  encoderSection.replaceChildren(...list.map((enc, i) => encoderRow(enc, i, list.length > 1)));
+  encoderSection.replaceChildren(...list.map((enc, i) => encoderRow(enc, i, list.length > 1, layerIndex)));
 }
 
-function encoderRow(enc: ViewEncoder, index: number, showIndex: boolean): HTMLElement {
+function encoderRow(enc: ViewEncoder, index: number, showIndex: boolean, layerIndex: number): HTMLElement {
   const row = document.createElement("div");
   row.className = "encoder";
   const label = document.createElement("span");
   label.className = "encoder-name";
   label.textContent = showIndex ? `Encoder ${index}` : "Encoder";
-  const ccw = document.createElement("span");
+  
+  const ccw = document.createElement("button");
+  ccw.type = "button";
   ccw.className = "encoder-dir";
   ccw.textContent = `\u21BA ${enc.ccwLabel}`;
   ccw.title = enc.ccw;
-  const cw = document.createElement("span");
+  ccw.addEventListener("click", () => {
+    vscode.postMessage({ type: "editEncoder", layer: layerIndex, encoder: index, direction: "ccw" });
+  });
+
+  const cw = document.createElement("button");
+  cw.type = "button";
   cw.className = "encoder-dir";
   cw.textContent = `\u21BB ${enc.cwLabel}`;
   cw.title = enc.cw;
+  cw.addEventListener("click", () => {
+    vscode.postMessage({ type: "editEncoder", layer: layerIndex, encoder: index, direction: "cw" });
+  });
+
   row.append(label, ccw, cw);
   return row;
 }

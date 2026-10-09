@@ -145,13 +145,17 @@ describe("keymap model", () => {
 describe("encoder extraction", () => {
   it("extracts CU7 ternary encoder binding (tap_code16 + clockwise ? CW : CCW)", () => {
     const m = parseKeymap(fixture("cu7_tench"));
-    expect(m.encoderBindings).toEqual([{ cw: "C(S(KC_V))", ccw: "C(S(A(KC_V)))" }]);
+    expect(m.encoderBindings).toEqual([
+      expect.objectContaining({ cw: "C(S(KC_V))", ccw: "C(S(A(KC_V)))" })
+    ]);
     expect(m.encoderMap).toBeUndefined();
   });
 
   it("extracts lily58 if/else encoder binding", () => {
     const m = parseKeymap(fixture("lily58_moo"));
-    expect(m.encoderBindings).toEqual([{ cw: "KC_LEFT", ccw: "KC_RIGHT" }]);
+    expect(m.encoderBindings).toEqual([
+      expect.objectContaining({ cw: "KC_LEFT", ccw: "KC_RIGHT" })
+    ]);
   });
 
   it("returns no encoder data when no encoder function exists", () => {
@@ -168,7 +172,9 @@ describe("encoder extraction", () => {
       "};",
     ].join("\n");
     const m = parseKeymap(src);
-    expect(m.encoderMap).toEqual([[{ cw: "KC_VOLU", ccw: "KC_VOLD" }]]);
+    expect(m.encoderMap).toEqual([[
+      expect.objectContaining({ cw: "KC_VOLU", ccw: "KC_VOLD" })
+    ]]);
     expect(m.encoderBindings).toBeUndefined();
   });
 
@@ -183,8 +189,8 @@ describe("encoder extraction", () => {
     ].join("\n");
     const m = parseKeymap(src);
     expect(m.encoderBindings).toEqual([
-      { cw: "KC_UP", ccw: "KC_DOWN" },
-      { cw: "KC_LEFT", ccw: "KC_RIGHT" },
+      expect.objectContaining({ cw: "KC_UP", ccw: "KC_DOWN" }),
+      expect.objectContaining({ cw: "KC_LEFT", ccw: "KC_RIGHT" }),
     ]);
   });
 });
@@ -196,5 +202,25 @@ describe("parsePath", () => {
     ["C:/q/keyboards/capsunlocked/cu7/keymaps/tench/keymap.c", { keyboard: "capsunlocked/cu7", keymap: "tench" }],
     ["C:/q/keyboards/lily58/keymaps/moo/config.h", undefined],
     ["C:/q/keyboards/lily58/keymap.c", undefined],
+    ["keymaps/keymap.c", undefined],
+    ["/path/to/keymap.c", undefined],
+    ["", undefined],
+    // Case insensitivity
+    ["C:/qmk/Keyboards/ZSA/Moonlander/Keymaps/Moo/Keymap.C", { keyboard: "ZSA/Moonlander", keymap: "Moo" }],
+    [String.raw`C:\Keyboards\Lily58\Keymaps\Default\Keymap.c`, { keyboard: "Lily58", keymap: "Default" }],
+    // No keyboards/ prefix (standalone / userspace / custom checkout)
+    ["/workspace/lily58/keymaps/moo/keymap.c", { keyboard: "lily58", keymap: "moo" }],
+    [String.raw`C:\projects\moonlander\keymaps\default\keymap.c`, { keyboard: "moonlander", keymap: "default" }],
+    ["/home/user/my-keyboard/keymaps/via/keymap.c", { keyboard: "my-keyboard", keymap: "via" }],
+    // Nested layout subdirectories
+    ["/qmk/keyboards/crkbd/keymaps/sub/layout/keymap.c", { keyboard: "crkbd", keymap: "sub/layout" }],
+    ["/workspace/keymaps/sub/dir/keymap.c", { keyboard: "workspace", keymap: "sub/dir" }],
+    // Relative paths
+    ["keymaps/default/keymap.c", { keyboard: "", keymap: "default" }],
+    ["./keymaps/moo/keymap.c", { keyboard: "", keymap: "moo" }],
+    ["keyboards/lily58/keymaps/default/keymap.c", { keyboard: "lily58", keymap: "default" }],
+    // URI formats
+    ["file:///c:/keyboards/lily58/keymaps/moo/keymap.c", { keyboard: "lily58", keymap: "moo" }],
+    ["vscode-remote://wsl/home/user/keyboards/zsa/moonlander/keymaps/moo/keymap.c", { keyboard: "zsa/moonlander", keymap: "moo" }],
   ])("%s", (p, want) => expect(parsePath(p)).toEqual(want));
 });

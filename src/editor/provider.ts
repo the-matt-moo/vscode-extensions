@@ -40,6 +40,10 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     return this.lastActiveDocument;
   }
 
+  setLastActiveDocument(doc: vscode.TextDocument | undefined): void {
+    this.lastActiveDocument = doc;
+  }
+
   async resolveCustomTextEditor(document: vscode.TextDocument, panel: vscode.WebviewPanel): Promise<void> {
     if (panel.active) this.lastActiveDocument = document;
     panel.webview.options = {
@@ -51,7 +55,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
     };
     panel.webview.html = this.html(panel.webview);
 
-    const parsedPath = parsePath(document.uri.fsPath);
+    const parsedPath = parsePath(document.uri.fsPath || document.uri.path);
     let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let resourcesPromise: Promise<Resources> | undefined;
@@ -116,6 +120,7 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
       else if (message.type === "compile") void vscode.commands.executeCommand("qmkLens.compile", document.uri);
       else if (message.type === "flash") void vscode.commands.executeCommand("qmkLens.flash", document.uri);
       else if (message.type === "editKey") void this.editKey(document, message.layer, message.key, currentState);
+      else if (message.type === "editEncoder") void this.editEncoder(document, message.layer, message.encoder, message.direction, currentState);
       else if (message.type === "swapKeys") void this.swapKeys(document, message.layer, message.a, message.b, currentState);
     });
 
@@ -192,6 +197,42 @@ export class KeymapEditorProvider implements vscode.CustomTextEditorProvider {
 
       const edit = new vscode.WorkspaceEdit();
       edit.replace(document.uri, rangeFor(document, key.start, key.end), expression);
+      if (!await vscode.workspace.applyEdit(edit)) vscode.window.showErrorMessage("QMK Lens could not apply the edit");
+    } catch (error) {
+      vscode.window.showErrorMessage(`QMK Lens: ${messageOf(error)}`);
+    }
+  }
+
+  private async editEncoder(
+    document: vscode.TextDocument,
+    layerIndex: number,
+    encoderIndex: number,
+    direction: "cw" | "ccw",
+    getState: () => Promise<CurrentState>,
+  ): Promise<void> {
+    try {
+      const version = document.version;
+      const state = await getState();
+      if (document.version !== version) return void vscode.window.showWarningMessage("QMK Lens: document changed; select the encoder again");
+      const binding = state.model.encoderMap?.[layerIndex]?.[encoderIndex] ?? state.model.encoderBindings?.[encoderIndex];
+      const reason = buildViewModel(state.model, state.resources.geometry, state.catalog).layers[layerIndex]?.readOnlyReason;
+      if (reason) return void vscode.window.showWarningMessage(`QMK Lens: ${reason}`);
+      if (!binding) return void vscode.window.showWarningMessage("QMK Lens: encoder binding no longer exists");
+
+      const text = direction === "cw" ? binding.cw : binding.ccw;
+      const start = direction === "cw" ? binding.cwStart : binding.ccwStart;
+      const end = direction === "cw" ? binding.cwEnd : binding.ccwEnd;
+      if (start === undefined || end === undefined) return void vscode.window.showWarningMessage("QMK Lens: Cannot edit this encoder format");
+
+      const expression = await pickExpression(state.catalog, state.model, text);
+      if (expression === undefined) return;
+      const validation = validateRawExpression(expression);
+      if (validation) return void vscode.window.showWarningMessage(`QMK Lens: ${validation}`);
+
+      if (document.version !== version) return void vscode.window.showWarningMessage("QMK Lens: document changed; select the encoder again");
+
+      const edit = new vscode.WorkspaceEdit();
+      edit.replace(document.uri, rangeFor(document, start, end), expression);
       if (!await vscode.workspace.applyEdit(edit)) vscode.window.showErrorMessage("QMK Lens could not apply the edit");
     } catch (error) {
       vscode.window.showErrorMessage(`QMK Lens: ${messageOf(error)}`);

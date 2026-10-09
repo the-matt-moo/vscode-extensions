@@ -36,4 +36,5 @@ export type WebviewMessage =
   | { type: "compile" }
   | { type: "flash" }
   | { type: "editKey"; layer: number; key: number }
+  | { type: "editEncoder"; layer: number; encoder: number; direction: "cw" | "ccw" }
   | { type: "swapKeys"; layer: number; a: number; b: number };

@@ -23,6 +23,10 @@ export interface Layer {
 export interface EncoderBinding {
   cw: string;
   ccw: string;
+  cwStart?: number;
+  cwEnd?: number;
+  ccwStart?: number;
+  ccwEnd?: number;
 }
 
 export interface KeymapModel {
@@ -37,8 +41,42 @@ export interface KeymapModel {
 }
 
 export function parsePath(fsPath: string): { keyboard: string; keymap: string } | undefined {
-  const m = /(?:^|\/)keyboards\/(.+)\/keymaps\/([^/]+)\/keymap\.c$/.exec(fsPath.replace(/\\/g, "/"));
-  return m ? { keyboard: m[1], keymap: m[2] } : undefined;
+  if (!fsPath) return undefined;
+  let normalized: string;
+  try {
+    normalized = decodeURI(fsPath.trim()).replace(/\\/g, "/");
+  } catch {
+    normalized = fsPath.trim().replace(/\\/g, "/");
+  }
+  const kmMatch = /(?:^|\/)keymaps\/(.+)\/keymap\.c$/i.exec(normalized);
+  if (!kmMatch) return undefined;
+  const keymap = kmMatch[1];
+
+  const lower = normalized.toLowerCase();
+  const kmIndex = lower.lastIndexOf("/keymaps/");
+  const effectiveKmIndex = kmIndex !== -1 ? kmIndex : (lower.startsWith("keymaps/") ? 0 : -1);
+
+  if (effectiveKmIndex !== -1) {
+    const beforeKm = normalized.slice(0, effectiveKmIndex);
+    const lowerBeforeKm = beforeKm.toLowerCase();
+    const kbIndex = lowerBeforeKm.lastIndexOf("/keyboards/");
+    if (kbIndex !== -1) {
+      const keyboard = beforeKm.slice(kbIndex + "/keyboards/".length);
+      if (keyboard) return { keyboard, keymap };
+    }
+    if (lowerBeforeKm.startsWith("keyboards/")) {
+      const keyboard = beforeKm.slice("keyboards/".length);
+      if (keyboard) return { keyboard, keymap };
+    }
+    if (beforeKm) {
+      const slashIndex = beforeKm.lastIndexOf("/");
+      const rawKb = slashIndex !== -1 ? beforeKm.slice(slashIndex + 1) : beforeKm;
+      const keyboard = rawKb === "." || rawKb === ".." || /^[a-zA-Z]:$/.test(rawKb) ? "" : rawKb;
+      return { keyboard, keymap };
+    }
+  }
+
+  return { keyboard: "", keymap };
 }
 
 let parser: Parser | undefined;
@@ -210,7 +248,15 @@ function parseEncoderMap(root: Node): EncoderBinding[][] | undefined {
           const fn = call.childForFieldName("function");
           if (fn?.text === "ENCODER_CCW_CW") {
             const args = kids(call.childForFieldName("arguments")!.namedChildren).filter((a) => a.type !== "comment");
-            if (args.length >= 2) encoders.push({ cw: args[1].text, ccw: args[0].text });
+            if (args.length >= 2) {
+              const ccwNode = args[0];
+              const cwNode = args[1];
+              encoders.push({
+                cw: cwNode.text, ccw: ccwNode.text,
+                cwStart: cwNode.startIndex, cwEnd: cwNode.endIndex,
+                ccwStart: ccwNode.startIndex, ccwEnd: ccwNode.endIndex,
+              });
+            }
           }
         }
       }
@@ -240,7 +286,15 @@ function extractOldStyleEncoders(root: Node): EncoderBinding[] {
         const neg = cond.text.includes("!");
         const a = n.childForFieldName("consequence");
         const b = n.childForFieldName("alternative");
-        if (a && b) bindings.set(encoderIndexOf(n), { cw: neg ? b.text : a.text, ccw: neg ? a.text : b.text });
+        if (a && b) {
+          const cwNode = neg ? b : a;
+          const ccwNode = neg ? a : b;
+          bindings.set(encoderIndexOf(n), {
+            cw: cwNode.text, ccw: ccwNode.text,
+            cwStart: cwNode.startIndex, cwEnd: cwNode.endIndex,
+            ccwStart: ccwNode.startIndex, ccwEnd: ccwNode.endIndex,
+          });
+        }
       }
       // Pattern 2: if (clockwise) { tap_code(CW); } else { tap_code(CCW); }
       if (n.type === "if_statement") {
@@ -251,7 +305,13 @@ function extractOldStyleEncoders(root: Node): EncoderBinding[] {
         const ccwBranch = neg ? n.childForFieldName("consequence") : n.childForFieldName("alternative");
         const cw = cwBranch && firstTapArg(cwBranch);
         const ccw = ccwBranch && firstTapArg(ccwBranch);
-        if (cw && ccw) bindings.set(encoderIndexOf(n), { cw, ccw });
+        if (cw && ccw) {
+          bindings.set(encoderIndexOf(n), {
+            cw: cw.text, ccw: ccw.text,
+            cwStart: cw.startIndex, cwEnd: cw.endIndex,
+            ccwStart: ccw.startIndex, ccwEnd: ccw.endIndex,
+          });
+        }
       }
     }
     return [...bindings].sort((a, b) => a[0] - b[0]).map(([, v]) => v);
@@ -283,14 +343,14 @@ function encoderIndexOf(n: Node): number {
   return 0;
 }
 
-function firstTapArg(n: Node): string | undefined {
+function firstTapArg(n: Node): Node | undefined {
   for (const d of walk(n)) {
     if (d.type === "call_expression") {
       const fn = d.childForFieldName("function");
       if (fn && /^(?:tap_code|tap_code16|register_code|register_code16)$/.test(fn.text)) {
         const args = d.childForFieldName("arguments");
         const arg = args && kids(args.namedChildren).find((a) => a.type !== "comment");
-        return arg?.text;
+        return arg;
       }
     }
   }
