@@ -23,6 +23,16 @@ suite('FavoritesProvider Tests', () => {
     assert.strictEqual(result3, false)
   })
 
+  test('should treat Windows drive paths as files, not uri schemes', function () {
+    if (process.platform !== 'win32') return this.skip()
+    const provider = new FavoritesProvider()
+    const uri: vscode.Uri = (provider as any).getUriFromPath('c:\\Users\\me\\folder')
+    assert.strictEqual(uri.scheme, 'file')
+    assert.strictEqual(uri.fsPath.toLowerCase(), 'c:\\users\\me\\folder')
+    // Real uri strings still parse as uris
+    assert.strictEqual((provider as any).getUriFromPath('vscode-remote://host/x').scheme, 'vscode-remote')
+  })
+
   test('should handle files.exclude configuration changes', () => {
     const provider = new FavoritesProvider()
     // This test just verifies the constructor doesn't throw an error

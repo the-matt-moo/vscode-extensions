@@ -66,7 +66,8 @@ export class FavoritesProvider
   }
 
   private getUriFromPath(filePath: string): vscode.Uri {
-    if (filePath.match(/^[A-Za-z][A-Za-z0-9+-.]*:/)) {
+    // Check absolute first: a Windows drive path like `c:\foo` also matches the uri-scheme regex.
+    if (!path.isAbsolute(filePath) && filePath.match(/^[A-Za-z][A-Za-z0-9+-.]*:/)) {
       // filePath is a uri string
       return vscode.Uri.parse(filePath)
     } else {

@@ -5,6 +5,7 @@ Monorepo for my VS Code extensions. Each extension is an independent npm package
 | Extension | Path |
 |---|---|
 | QMK Keymap Lens | [extensions/qmk-keymap-lens](extensions/qmk-keymap-lens) |
+| Favorites (fork of [leftstick/vscode-favorites](https://github.com/leftstick/vscode-favorites), GPL-3.0) | [extensions/vscode-favorites](extensions/vscode-favorites) |
 
 ## Working on an extension
 
