@@ -47,34 +47,60 @@ async function doctor(out: vscode.OutputChannel): Promise<void> {
   }
 }
 
-async function openVisualEditor(provider: KeymapEditorProvider): Promise<void> {
+export function documentPath(documentOrUri: vscode.TextDocument | vscode.Uri): string {
+  const uri = "uri" in documentOrUri ? documentOrUri.uri : documentOrUri;
+  return uri.fsPath || uri.path || "";
+}
+
+export function findKeymapUri(provider: KeymapEditorProvider, targetUri?: vscode.Uri): vscode.Uri | undefined {
+  if (targetUri && parsePath(documentPath(targetUri))) {
+    return targetUri;
+  }
   const active = vscode.window.activeTextEditor?.document;
-  const uri = active && parsePath(active.uri.fsPath)
-    ? active.uri
-    : provider.getLastActiveDocument()?.uri;
-  if (!uri || !parsePath(uri.fsPath)) {
+  if (active && parsePath(documentPath(active))) {
+    return active.uri;
+  }
+  const lastActive = provider.getLastActiveDocument();
+  if (lastActive && parsePath(documentPath(lastActive))) {
+    return lastActive.uri;
+  }
+  const activeTab = vscode.window.tabGroups?.activeTabGroup?.activeTab;
+  const tabUri = (activeTab?.input as { uri?: vscode.Uri } | undefined)?.uri;
+  if (tabUri && parsePath(documentPath(tabUri))) {
+    return tabUri;
+  }
+  for (const editor of vscode.window.visibleTextEditors ?? []) {
+    if (parsePath(documentPath(editor.document))) {
+      return editor.document.uri;
+    }
+  }
+  return undefined;
+}
+
+export async function openVisualEditor(provider: KeymapEditorProvider, uri?: vscode.Uri): Promise<void> {
+  const targetUri = findKeymapUri(provider, uri);
+  if (!targetUri) {
     vscode.window.showWarningMessage("QMK Lens: open a keymaps/*/keymap.c file first");
     return;
   }
-  await vscode.commands.executeCommand("vscode.openWith", uri, "qmkLens.keymap", vscode.ViewColumn.Beside);
+  await vscode.commands.executeCommand("vscode.openWith", targetUri, "qmkLens.keymap", vscode.ViewColumn.Beside);
 }
 
-interface ResolvedKeymap {
+export interface ResolvedKeymap {
   document: vscode.TextDocument;
   keyboard: string;
   keymap: string;
 }
 
-async function resolveKeymap(
+export async function resolveKeymap(
   uri: vscode.Uri | undefined,
   provider: KeymapEditorProvider,
 ): Promise<ResolvedKeymap | undefined> {
-  const active = vscode.window.activeTextEditor?.document;
-  const activeIsKeymap = active && parsePath(active.uri.fsPath) ? active : undefined;
-  const document = uri
-    ? vscode.workspace.textDocuments.find((item) => item.uri.toString() === uri.toString()) ?? await vscode.workspace.openTextDocument(uri)
-    : activeIsKeymap ?? provider.getLastActiveDocument();
-  const parsed = document && parsePath(document.uri.fsPath);
+  const targetUri = findKeymapUri(provider, uri);
+  const document = targetUri
+    ? vscode.workspace.textDocuments.find((item) => item.uri.toString() === targetUri.toString()) ?? await vscode.workspace.openTextDocument(targetUri)
+    : undefined;
+  const parsed = document && parsePath(documentPath(document));
   if (!document || !parsed) {
     vscode.window.showErrorMessage("QMK Lens: select a keymaps/*/keymap.c file first");
     return undefined;
@@ -201,8 +227,13 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     out,
     diagnostics,
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor?.document && parsePath(documentPath(editor.document))) {
+        provider.setLastActiveDocument(editor.document);
+      }
+    }),
     vscode.commands.registerCommand("qmkLens.doctor", () => doctor(out)),
-    vscode.commands.registerCommand("qmkLens.openVisual", () => openVisualEditor(provider)),
+    vscode.commands.registerCommand("qmkLens.openVisual", (uri?: vscode.Uri) => openVisualEditor(provider, uri)),
     vscode.commands.registerCommand("qmkLens.compile", (uri?: vscode.Uri) => compileKeymap(uri, provider, context, out, diagnostics)),
     vscode.commands.registerCommand("qmkLens.flash", (uri?: vscode.Uri) => flashKeymap(uri, provider)),
     vscode.commands.registerCommand("qmkLens.openToolbox", (uri?: vscode.Uri) => openToolbox(uri, provider, context)),

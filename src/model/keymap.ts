@@ -350,7 +350,7 @@ function firstTapArg(n: Node): Node | undefined {
       if (fn && /^(?:tap_code|tap_code16|register_code|register_code16)$/.test(fn.text)) {
         const args = d.childForFieldName("arguments");
         const arg = args && kids(args.namedChildren).find((a) => a.type !== "comment");
-        return arg;
+        return arg ?? undefined;
       }
     }
   }
