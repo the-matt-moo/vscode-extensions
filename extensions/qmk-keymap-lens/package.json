@@ -8,7 +8,8 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/the-matt-moo/qmk-keymap-lens"
+    "url": "https://github.com/the-matt-moo/vscode-extensions",
+    "directory": "extensions/qmk-keymap-lens"
   },
   "engines": {
     "vscode": "^1.95.0"
