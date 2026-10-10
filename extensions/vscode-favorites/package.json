@@ -2,7 +2,7 @@
   "name": "vscode-favorites",
   "displayName": "favorites",
   "description": "Mark resources (files or folders, local and remote) as favorites, so they can be easily accessed.",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "publisher": "the-matt-moo",
   "engines": {
     "vscode": "^1.80.0"
@@ -22,7 +22,7 @@
   "categories": [
     "Other"
   ],
-  "icon": "images/favorites.png",
+  "icon": "images/icon.png",
   "bugs": {
     "url": "https://github.com/leftstick/vscode-favorites/issues",
     "email": "leftstick@qq.com"

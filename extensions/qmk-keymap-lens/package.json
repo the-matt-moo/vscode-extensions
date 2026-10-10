@@ -1,9 +1,10 @@
 {
   "name": "qmk-keymap-lens",
   "displayName": "QMK Keymap Lens",
+  "icon": "media/icon.png",
   "description": "Visual keymap editing for QMK keymap.c files",
   "publisher": "the-matt-moo",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "MIT",
   "private": true,
   "repository": {

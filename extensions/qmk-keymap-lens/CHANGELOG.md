@@ -1,3 +1,6 @@
+## [0.3.1] - 09-10-2026
+- Update extension icon.
+
 ## [0.3.0] - 2026-10-09
 - Users can now click on rotary encoder CW/CCW bindings in the visualizer to assign/modify their keycodes via the QuickPick menu.
 

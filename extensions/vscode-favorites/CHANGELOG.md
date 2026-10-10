@@ -1,5 +1,9 @@
 <!--Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.-->
 
+### 09-10-2026 (1.15.3)
+
+1. Update extension icon
+
 ### 2026-10-09 (1.15.2)
 
 1. Fix folders with absolute Windows paths (e.g. `c:\...`) expanding with no children
