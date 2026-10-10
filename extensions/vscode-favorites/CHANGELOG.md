@@ -1,5 +1,10 @@
 <!--Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.-->
 
+### 2026-10-09 (1.15.2)
+
+1. Fix folders with absolute Windows paths (e.g. `c:\...`) expanding with no children
+2. Fork published under `the-matt-moo` publisher
+
 ### 2026-03-24 (1.15.1)
 
 1. Add group selection when adding to favorites (right-click context menu)

@@ -2,8 +2,8 @@
   "name": "vscode-favorites",
   "displayName": "favorites",
   "description": "Mark resources (files or folders, local and remote) as favorites, so they can be easily accessed.",
-  "version": "1.15.1",
-  "publisher": "howardzuo",
+  "version": "1.15.2",
+  "publisher": "the-matt-moo",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -30,7 +30,8 @@
   "homepage": "https://github.com/leftstick/vscode-favorites/blob/master/README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/leftstick/vscode-favorites.git"
+    "url": "https://github.com/the-matt-moo/vscode-extensions.git",
+    "directory": "extensions/vscode-favorites"
   },
   "activationEvents": [
     "onCommand:favorites.addToFavorites",
