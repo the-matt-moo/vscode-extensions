@@ -1,0 +1,15 @@
+out
+node_modules
+favorites-localization
+
+package.nls.*.json
+package-lock.json
+pnpm-lock.yaml
+
+.DS_Store
+
+# VSIX packages
+vscode-favorites-*.vsix
+
+# Build output
+dist/

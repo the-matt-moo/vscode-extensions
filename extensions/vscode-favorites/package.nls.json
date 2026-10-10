@@ -1,0 +1,20 @@
+{
+  "command.favorites.addtofavorites": "Add to Favorites",
+  "command.favorites.deletefavorite": "Remove from Favorites",
+  "command.favorites.moveup": "Move Up",
+  "command.favorites.movedown": "Move Down",
+  "command.favorites.movetotop": "Move to Top",
+  "command.favorites.movetobottom": "Move to Bottom",
+  "command.favorites.refresh": "Refresh",
+  "command.favorites.sort": "Toggle Sort",
+  "command.favorites.revealInOS.mac": "Reveal in Finder",
+  "command.favorites.revealInOS.windows": "Reveal in File Explorer",
+  "command.favorites.revealInOS.other": "Open Containing Folder",
+  "command.favorites.revealInSideBar": "Reveal in Side Bar",
+  "command.favorites.openToSide": "Open to the Side",
+  "command.favorites.changeGroup": "Change Current Group",
+  "command.favorites.newGroup": "Create New Group",
+  "command.favorites.toggleFavorite": "Toggle Favorite",
+  "command.favorites.toggleFolderOfActiveFile": "Toggle Folder of Active File",
+  "view.favorites.title": "Favorites"
+}
